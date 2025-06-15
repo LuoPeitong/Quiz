@@ -1,3 +1,5 @@
+@import "uview-ui/theme.scss";
+
 <script>
 	export default {
 		onLaunch: function() {

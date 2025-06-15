@@ -2,7 +2,10 @@ import App from './App'
 
 // #ifndef VUE3
 import Vue from 'vue'
-import './uni.promisify.adaptor'
+import 'uni.promisify.adaptor'
+import uView from 'uview-ui';
+import './uni.scss'
+Vue.use(uView);
 Vue.config.productionTip = false
 App.mpType = 'app'
 const app = new Vue({

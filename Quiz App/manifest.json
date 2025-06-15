@@ -68,5 +68,8 @@
     "uniStatistics" : {
         "enable" : false
     },
+	"css": {
+	    "sassImplementationName": "node-sass"
+	  },
     "vueVersion" : "2"
 }
