@@ -7,6 +7,13 @@ import uView from 'uview-ui';
 import './uni.scss'
 Vue.use(uView);
 Vue.config.productionTip = false
+
+// 服务器地址
+//Vue.prototype.$baseUrl = "http://8.138.216.22:8088/quizAPI/"
+// 本地地址
+Vue.prototype.$baseUrl = "http://localhost:8088/quizAPI_war_exploded/"
+
+
 App.mpType = 'app'
 const app = new Vue({
   ...App

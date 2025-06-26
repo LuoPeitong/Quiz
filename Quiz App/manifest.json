@@ -1,6 +1,6 @@
 {
     "name" : "Quiz App",
-    "appid" : "",
+    "appid" : "__UNI__DAF1105",
     "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : "100",
@@ -17,7 +17,9 @@
             "delay" : 0
         },
         /* 模块配置 */
-        "modules" : {},
+        "modules" : {
+            "OAuth" : {}
+        },
         /* 应用发布信息 */
         "distribute" : {
             /* android打包配置 */
@@ -43,18 +45,28 @@
             /* ios打包配置 */
             "ios" : {},
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "oauth" : {
+                    "weixin" : {
+                        "appid" : "wxf348d9c9bb935ca4",
+                        "UniversalLinks" : ""
+                    }
+                }
+            }
         }
     },
     /* 快应用特有相关 */
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wxf348d9c9bb935ca4",
         "setting" : {
             "urlCheck" : false
         },
-        "usingComponents" : true
+        "usingComponents" : true,
+        "uniStatistics" : {
+            "enable" : false
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true
@@ -68,8 +80,13 @@
     "uniStatistics" : {
         "enable" : false
     },
-	"css": {
-	    "sassImplementationName": "node-sass"
-	  },
-    "vueVersion" : "2"
+    "css" : {
+        "sassImplementationName" : "node-sass"
+    },
+    "vueVersion" : "2",
+    "permission" : {
+        "scope.userInfo" : {
+            "desc" : "用于登录答题小程序"
+        }
+    }
 }
