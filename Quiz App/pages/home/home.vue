@@ -71,15 +71,19 @@
 		},
 		methods: {
 			handleStartQuiz() {
-				// if (!this.openid) {
-				//   this.showLoginPrompt = true;
-				//   return;
-				// }
+				// 1. 先检查 storage 里有没有登录标识
+				const phone = uni.getStorageSync('login_user_phone');
+				if (!phone) {
+					// 如果没登录，则跳到登录页
+					uni.navigateTo({
+						url: '/pages/index/index'
+					});
+					return;
+				}
 				uni.navigateTo({
 					url: '/pages/quiz/quiz'
 				});
 			},
-
 			async getRankList() {
 				uni.request({
 					url: this.$baseUrl + "api/getRank",
@@ -91,19 +95,6 @@
 						console.log(res.data.message);
 						this.otherRanks = res.data.object;
 					}
-				})
-			},
-			startQuiz() {
-				if (!this.openid) {
-					uni.showToast({
-						title: "请先登录",
-						icon: "none"
-					});
-					this.loginWithWeChat();
-					return;
-				}
-				uni.navigateTo({
-					url: '/pages/quiz/quiz'
 				})
 			}
 		}
