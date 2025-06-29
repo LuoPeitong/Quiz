@@ -31,7 +31,7 @@ public class QuizServiceImpl implements QuizService {
     public Result getQuestions(){
 
         // 1. 从数据库拉原始题目
-        List<Questions> raw = iQuestionsDao.getRandomQuestions(20);
+        List<Questions> raw = iQuestionsDao.getRandomQuestions(5);
 
         // 2. 转换成插件需要的格式
         List<SlideQuestionDTO> slideList = new ArrayList<>(raw.size());
@@ -116,7 +116,7 @@ public class QuizServiceImpl implements QuizService {
             answerEntities.add(ans);
 
             if (isCorrect) {
-                totalScore += 5;  // 每题 5 分
+                totalScore += 20;  // 每题 5 分
             }
         }
 
