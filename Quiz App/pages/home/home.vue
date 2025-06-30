@@ -5,7 +5,7 @@
 			<view class="title">
 				<text class="title-main">《中华人民共和国工会法》</text>
 				<view class="title-sub">学习有奖竞答活动</view>
-				<view class="title-org">主办方：湖南省总工会</view>
+				<view class="title-org">主办方：隆回县高新区管委会，隆回县高新区工会联合委员会</view>
 			</view>
 
 			<!-- ② 开始答题按钮 -->
@@ -24,19 +24,27 @@
 				<view class="section-title">🎉 活动说明</view>
 
 				<view class="sub-title">🎁 活动奖品</view>
-				<view>一等奖：10元微信现金红包。</view>
-				<view>二等奖：5元微信现金红包。</view>
-				<view>三等奖：2元微信现金红包。</view>
+				<view>一等奖：5元微信现金红包</view>
+				<view>二等奖：3元微信现金红包</view>
+				<view>三等奖：2元微信现金红包</view>
+				<view>每日奖池：3000元</view>
 
 				<view class="sub-title">📅 活动时间</view>
-				<view>2025年05月19日 08:00 ~ 2025年05月23日 18:00</view>
+				<view>2025年06月30日 08:00 ~ 2025年07月30日 18:00</view>
 
 				<view class="sub-title">🏢 主办单位</view>
-				<view>湖南省总工会</view>
+				<view>隆回县高新区管委会，隆回县高新区工会联合委员会</view>
 
 				<view class="sub-title">📝 活动规则</view>
 				<view>
-					本次活动为线上答题形式，活动期间，每人每日答题机会不限。每次答题限时1分钟，每次从题库中随机抽取5道题目，每题20分，总分100分。达到100分即可获得抽奖机会。
+					本次活动为线上答题形式，活动期间，每人每天最多3次答题机会。
+					每次从题库中随机抽取5道题目，每题20分，总分100分。
+					仅当5道题全部答对（100分）时，才可获得一次抽奖机会。
+				</view>
+
+				<view class="sub-title">🏆 组织奖</view>
+				<view>
+					企业组织50人及以上参与即可参评，按答对次数排名，评选前12家企业，颁发“最佳组织奖”。
 				</view>
 			</view>
 

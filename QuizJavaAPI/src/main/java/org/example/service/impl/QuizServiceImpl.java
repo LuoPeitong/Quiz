@@ -91,17 +91,63 @@ public class QuizServiceImpl implements QuizService {
         List<QuizAnswers> answerEntities = new ArrayList<>();
 
         for (SlideQuestionDTO q : dto.getDataList()) {
-            // 2.1 从 children 里提取选项 alias
             String userAns = "";
-            userAns = q.getUserAnswer().toString();
+            System.out.println(q);
+// 2.1 从 userAnswer 获取原始值，可能是 Map 或 List
+            Object rawAns = q.getUserAnswer();
 
-            if (!userAns.isEmpty() && userAns.charAt(0) == '{') {
-                if (userAns.length() >= 9) {
-                    userAns = String.valueOf(userAns.charAt(7));
-                } else {
-                    userAns = "";
+// 2.2 统一组装成 List<OptionDTO>
+            List<OptionDTO> optionDTOS = new ArrayList<>();
+            if (rawAns instanceof List) {
+                for (Object item : (List<?>) rawAns) {
+                    if (item instanceof OptionDTO) {
+                        optionDTOS.add((OptionDTO) item);
+                    } else if (item instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> map = (Map<String, Object>) item;
+                        OptionDTO od = new OptionDTO();
+                        od.setAlias((String) map.get("alias"));
+                        od.setAnswer((String) map.get("answer"));
+                        Object sel = map.get("isSelect");
+                        od.setIsSelect(sel instanceof Number
+                                ? ((Number) sel).intValue()
+                                : sel instanceof Boolean
+                                ? ((Boolean) sel ? 1 : 0)
+                                : 0
+                        );
+                        optionDTOS.add(od);
+                    }
                 }
+            } else if (rawAns instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) rawAns;
+                OptionDTO od = new OptionDTO();
+                od.setAlias((String) map.get("alias"));
+                od.setAnswer((String) map.get("answer"));
+                Object sel = map.get("isSelect");
+                od.setIsSelect(sel instanceof Number
+                        ? ((Number) sel).intValue()
+                        : sel instanceof Boolean
+                        ? ((Boolean) sel ? 1 : 0)
+                        : 0
+                );
+                optionDTOS.add(od);
             }
+
+            // 构造 StringBuilder
+            StringBuilder sb = new StringBuilder();
+            // 拼接每个选项的 alias 和逗号
+            for (OptionDTO o : optionDTOS) {
+                System.out.println(o.getAlias());
+                sb.append(o.getAlias()).append(',');
+            }
+            // 如果有内容，就去掉最后一个多余的逗号
+            if (sb.length() > 1) {
+                sb.setLength(sb.length() - 1);
+            }
+            // 转成最终的 userAns 字符串
+            userAns = sb.toString();
+            System.out.println(userAns);
 
             // 3. 拿正确答案、拆分、排序
             String correct = iQuestionsDao.getAnswerById(Integer.valueOf(q.getId()));
