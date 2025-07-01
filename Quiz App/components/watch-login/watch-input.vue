@@ -22,6 +22,20 @@
 			@touchmove="$emit('touchmove', $event)"
 			@touchstart="$emit('touchstart', $event)"
 		/>
+		<view
+		  v-if="enableAutocomplete && showSuggestions && suggestions.length"
+		  class="suggestions"
+		>
+		  <view
+		    v-for="item in suggestions"
+		    :key="item.id"
+		    class="suggestion-item"
+		    @tap="selectSuggestion(item)"
+		  >
+		    {{ item.name }}
+		  </view>
+		</view>
+
 		<!-- 是否可见密码 -->
 		<image 
 			v-if="_isShowPass&&type==='password'&&!_isShowCode"
@@ -47,6 +61,10 @@
 				showPassword: false, //是否显示明文
 				second: 0, //倒计时
 				isRunCode: false, //是否开始倒计时
+				suggestions: [],    // 存后台返回的候选项
+				showSuggestions:  false, // 控制列表显隐
+				_suggestionTimer: null,  // 防抖定时器
+
 			}
 		},
 		props:{
@@ -81,7 +99,14 @@
 				//是否聚焦  
 				type: [Boolean,String],  
 				default: false  
-			}  
+			},
+			// 是否启用模糊搜索
+			enableAutocomplete: { type: Boolean, default: false },
+			// 搜索接口 URL，GET 时会带 keyword 参数
+			autocompleteUrl:     { type: String,  default: '' },
+			// 如果需要带额外参数
+			autocompleteParams:  { type: Object,  default: () => ({}) },
+
 		},
 		model: {
 			prop: 'value',
@@ -133,7 +158,42 @@
 						clearInterval(countDown)
 					}
 				},1000)
-			}
+			},
+			handleInput(e) {
+			  const val = e.detail.value;
+			  this.$emit('input', val);                    // 原有 v-model 更新
+			  if (!this.enableAutocomplete) return;
+			
+			  clearTimeout(this._suggestionTimer);
+			  if (!val.trim()) { this.suggestions = []; return; }
+			
+			  this._suggestionTimer = setTimeout(() => {
+			    uni.request({
+			      url: this.autocompleteUrl,
+			      method: 'GET',
+			      data: { keyword: val, ...this.autocompleteParams },
+			      success: res => { this.suggestions = res.data.data || []; },
+			      fail:   ()  => { this.suggestions = []; }
+			    });
+			  }, 300);
+			},
+			handleFocus(e) {
+			  this.$emit('focus', e);
+			  if (this.enableAutocomplete) this.showSuggestions = true;
+			},
+			handleBlur(e) {
+			  this.$emit('blur', e);
+			  if (this.enableAutocomplete) {
+			    setTimeout(() => { this.showSuggestions = false; }, 200);
+			  }
+			},
+			selectSuggestion(item) {
+			  this.$emit('input', item.name);  // 更新 v-model
+			  this.$emit('select', item);      // 把选中项传给父组件
+			  this.showSuggestions = false;
+			  this.suggestions = [];
+			},
+
 		},
 		computed:{
 			_type(){
@@ -215,4 +275,17 @@
 	    -webkit-box-shadow: 0 0 60rpx 0 rgba(43,86,112,.1) ;
 	    box-shadow: 0 0 60rpx 0 rgba(43,86,112,.1) ;
 	}
+	.suggestions {
+	  position: absolute;
+	  top: 100%; left: 0; right: 0;
+	  max-height: 200px; overflow-y: auto;
+	  background: #fff; border: 1px solid #ddd;
+	  z-index: 10;
+	}
+	.suggestion-item {
+	  padding: 10px; border-bottom: 1px solid #eee;
+	}
+	.suggestion-item:last-child { border-bottom: none; }
+	.suggestion-item:hover { background: #f5f5f5; }
+
 </style>

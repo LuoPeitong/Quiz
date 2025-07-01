@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpSession;
+
 @CrossOrigin
 @Controller
 public class HomeController {
@@ -15,17 +17,15 @@ public class HomeController {
     @Autowired
     private HomeService homeService;
 
-    public void isLogin(){}
-
     @ResponseBody
-    @RequestMapping("/api/getRank")
-    public Result getRank(){
+    @RequestMapping("/api/init")
+    public Result initPage(HttpSession session) {
 
         try {
-            return homeService.getRank();
 
+            return homeService.initPage(session);
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("api/init: " + e);
             return Result.error();
         }
     }

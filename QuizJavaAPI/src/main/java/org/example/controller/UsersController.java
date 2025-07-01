@@ -16,13 +16,17 @@ public class UsersController {
     @Autowired
     private UsersService usersService;
 
+    @ResponseBody
     @PostMapping("/login")
     public Result login(@RequestBody Users users, HttpSession session) {
 
         try{
+
             return usersService.login(users,session);
         }
         catch (Exception e) {
+
+            System.out.println("login: " + e);
             return Result.error();
         }
     }

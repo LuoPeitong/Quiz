@@ -18,6 +18,14 @@ public interface IQuizRecordsDao {
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insertQuizRecord(QuizRecords record);
 
+    @Select("SELECT COUNT(*) FROM quiz_records")
+    int countTotalAttempts();
+
+    @Select("SELECT COUNT(*) FROM quiz_records WHERE user_id = #{userId} AND submit_time < #{end} AND submit_time >= #{start}")
+    int countTodayAttempts(@Param("userId") int userId,
+                           @Param("start")  java.time.LocalDateTime start,
+                           @Param("end")    java.time.LocalDateTime end);
+
     @Select("SELECT * FROM quiz_records WHERE id = #{recordId}")
     QuizRecords getQuizRecordById(QuizRecords record);
 

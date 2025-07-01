@@ -16,7 +16,7 @@
 			<!-- ③ 参与信息 -->
 			<view class="participation-info glass-box">
 				已有 {{ participantCount }} 人参加活动<br />
-				您今天还有 {{ remainingChance }} 次参与机会
+				您今天还有 {{ 3-remainingChance }} 次参与机会
 			</view>
 
 			<!-- ④ 活动说明 -->
@@ -69,13 +69,14 @@
 		data() {
 			return {
 				nickname: '',
-				participantCount: 342,
-				remainingChance: 1,
+				participantCount: 0,
+				remainingChance: 0,
 				otherRanks: []
 			};
 		},
-		onLoad() {
-			this.getRankList();
+		onShow() {
+			//uni.clearStorageSync();
+			this.Init();
 		},
 		methods: {
 			handleStartQuiz() {
@@ -84,7 +85,15 @@
 				if (!phone) {
 					// 如果没登录，则跳到登录页
 					uni.navigateTo({
-						url: '/pages/index/index'
+						url: '/pages/index/index?returnUrl=/pages/quiz/quiz'
+					});
+					return;
+				}
+				// 2. 判断今天剩余答题次数
+				if (this.remainingChance >= 3) {
+					uni.showToast({
+						icon: 'none',
+						title: '您今天的答题次数已用完'
 					});
 					return;
 				}
@@ -92,16 +101,25 @@
 					url: '/pages/quiz/quiz'
 				});
 			},
-			async getRankList() {
+			async Init() {
+				const phone = uni.getStorageSync('login_user_phone');
+				if (!phone) {
+					// 如果没登录，则跳到登录页
+					uni.navigateTo({
+						url: '/pages/index/index?returnUrl=/pages/home/home'
+					});
+					return;
+				}
 				uni.request({
-					url: this.$baseUrl + "api/getRank",
+					url: this.$baseUrl + "api/init",
 					method: 'post',
 					header: {
 						'content-type': 'application/json'
 					},
 					success: res => {
-						console.log(res.data.message);
-						this.otherRanks = res.data.object;
+						this.otherRanks = res.data.object.otherRanks;
+						this.participantCount = res.data.object.participantCount;
+						this.remainingChance = res.data.object.remainingChance;
 					}
 				})
 			}

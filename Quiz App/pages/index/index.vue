@@ -9,7 +9,8 @@
 			<view class="main">
 				<wInput v-model="phone" type="text" maxlength="11" placeholder="电话" :focus="isFocus"></wInput>
 				<wInput v-model="nickname" type="text" maxlength="11" placeholder="姓名"></wInput>
-				<wInput v-model="company" type="text" maxlength="20" placeholder="公司名称/简称"></wInput>
+				<wInput v-model="company" type="text" maxlength="20" placeholder="公司名称/简称"  @focus="handleClick()"></wInput>
+				<lzcPicker ref="lzcPicker" @change="changeItem" :pickerList="localCompanies" pickerTittle='选择公司' />
 			</view>
 			<wButton class="wbutton" text="登 录" @click="startLogin"></wButton>
 		</view>
@@ -20,6 +21,8 @@
 	let _this;
 	import wInput from '../../components/watch-login/watch-input.vue' //input
 	import wButton from '../../components/watch-login/watch-button.vue' //button
+	import lzcPicker from '../../components/lzc-picker/lzc-picker.vue'
+	import companies from './company.json';
 
 	export default {
 		data() {
@@ -30,19 +33,31 @@
 				nickname: '', //姓名
 				company: '', //公司
 				isRotate: false, //是否加载旋转
-				isFocus: true // 是否聚焦
+				isFocus: true, // 是否聚焦
+				localCompanies: companies,
+				returnUrl: ''
 			};
 		},
 		components: {
 			wInput,
 			wButton,
+			lzcPicker
 		},
+		onLoad(options) {
+		      // 从 URL 参数里读取 returnUrl
+		      this.returnUrl = options.returnUrl || '/pages/home/home';
+		    },
 		mounted() {
 			_this = this;
 		},
 		methods: {
+			changeItem(company){
+				this.company = company
+			},
+			handleClick(){
+				 this.$refs.lzcPicker.handleShow();
+			},
 			startLogin(e) {
-				console.log(e)
 				//登录
 				if (this.isRotate) {
 					//判断是否加载中，避免重复点击请求
@@ -72,7 +87,7 @@
 					});
 					return;
 				}
-				
+
 				uni.request({
 					url: this.$baseUrl + "api/users/login",
 					data: {
@@ -87,17 +102,15 @@
 					success: res => {
 						if (res.data.code == 200) {
 							uni.setStorageSync('login_user_phone', res.data.object)
-							// 登录后回到答题页
-							uni.redirectTo({
-								url: '/pages/quiz/quiz'
-							})
-							console.log("登录成功")
 
 							_this.isRotate = true
 							setTimeout(function() {
 								_this.isRotate = false
 							}, 3000)
 
+							// 登录后回到答题页
+							uni.redirectTo({ url: this.returnUrl });
+							console.log("登录成功")
 						} else {
 							this.PrintMessage(res.data.message)
 						}

@@ -20,7 +20,7 @@ public class QuizController {
             return quizService.getQuestions();
 
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("/api/questions/random: " + e);
             return Result.error();
         }
     }
@@ -32,7 +32,7 @@ public class QuizController {
             return quizService.submitQuizRecords(submitDTO);
 
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println("/api/submit: " + e);
             return Result.error();
         }
     }

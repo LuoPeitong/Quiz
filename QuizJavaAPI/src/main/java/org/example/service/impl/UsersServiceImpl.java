@@ -23,9 +23,8 @@ public class UsersServiceImpl implements UsersService {
             users.setGender("男");
             iUsersDao.register(users);
         }
-
+        u = iUsersDao.getUserById(users.getPhone());
         session.setAttribute("login_user_id",u);
-
         return Result.ok(u,"缓存成功");
     }
 }
