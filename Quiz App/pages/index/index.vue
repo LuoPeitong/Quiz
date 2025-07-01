@@ -102,6 +102,7 @@
 					success: res => {
 						if (res.data.code == 200) {
 							uni.setStorageSync('login_user_phone', res.data.object)
+							uni.setStorageSync('login_timeing',new Date().getTime())
 
 							_this.isRotate = true
 							setTimeout(function() {
@@ -109,7 +110,8 @@
 							}, 3000)
 
 							// 登录后回到答题页
-							uni.redirectTo({ url: this.returnUrl });
+							//uni.redirectTo({ url: this.returnUrl });
+							uni.reLaunch({ url: this.returnUrl })
 							console.log("登录成功")
 						} else {
 							this.PrintMessage(res.data.message)

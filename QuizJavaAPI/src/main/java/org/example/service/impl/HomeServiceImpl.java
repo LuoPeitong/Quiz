@@ -8,7 +8,6 @@ import org.example.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -26,9 +25,9 @@ public class HomeServiceImpl implements HomeService {
         return Result.ok(iQuizRecordsDao.getTopRank(), "排行榜获取成功");
     }
 
-    public Result initPage(HttpSession session){
+    public Result initPage(Users u){
 
-        Users u = (Users) session.getAttribute("login_user_id");
+        //Users u = (Users) session.getAttribute("login_user_id");
 
         int userID = u.getId();
 

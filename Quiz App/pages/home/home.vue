@@ -74,6 +74,9 @@
 				otherRanks: []
 			};
 		},
+		onLoad() {
+			this.Init();
+		},
 		onShow() {
 			//uni.clearStorageSync();
 			this.Init();
@@ -102,7 +105,18 @@
 				});
 			},
 			async Init() {
+				const loginTime = uni.getStorageSync('login_timeing')
+				const currentTimestamp = Date.now();
+				const timeDifference = currentTimestamp - loginTime;
+				
+				// 判断时间差是否超过30分钟（30分钟 = 30 * 60 * 1000 毫秒）
+				if (timeDifference > 5 * 60 * 1000) {
+				  console.log('时间差超过30分钟');
+				  uni.removeStorageSync('login_user_phone')
+				  uni.removeStorageSync('login_timeing')
+				}
 				const phone = uni.getStorageSync('login_user_phone');
+				console.log('phone',phone)
 				if (!phone) {
 					// 如果没登录，则跳到登录页
 					uni.navigateTo({
@@ -115,6 +129,9 @@
 					method: 'post',
 					header: {
 						'content-type': 'application/json'
+					},
+					data: {
+						id: Number(uni.getStorageSync('login_user_phone').id), // 确保是 Integer
 					},
 					success: res => {
 						this.otherRanks = res.data.object.otherRanks;
