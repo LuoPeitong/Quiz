@@ -260,7 +260,7 @@
 	.footbtn {
 		display: flex;
 		justify-content: space-between;
-		margin-top: 112rpx;
+		margin-top: 50rpx;
 		padding: 0 24rpx;
 	}
 	
