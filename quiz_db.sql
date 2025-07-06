@@ -1,21 +1,78 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : 服务器
+ Source Server         : local_MySQL
  Source Server Type    : MySQL
- Source Server Version : 80042
- Source Host           : 8.138.216.22:3306
+ Source Server Version : 80025
+ Source Host           : localhost:3306
  Source Schema         : quiz_db
 
  Target Server Type    : MySQL
- Target Server Version : 80042
+ Target Server Version : 80025
  File Encoding         : 65001
 
- Date: 30/06/2025 19:00:21
+ Date: 07/07/2025 00:56:03
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for lottery_pool
+-- ----------------------------
+DROP TABLE IF EXISTS `lottery_pool`;
+CREATE TABLE `lottery_pool`  (
+  `pool_date` date NOT NULL COMMENT '奖池对应日期',
+  `balance` int(0) NOT NULL COMMENT '当日剩余奖金',
+  PRIMARY KEY (`pool_date`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of lottery_pool
+-- ----------------------------
+INSERT INTO `lottery_pool` VALUES ('2025-07-07', 3000);
+
+-- ----------------------------
+-- Table structure for lottery_prizes
+-- ----------------------------
+DROP TABLE IF EXISTS `lottery_prizes`;
+CREATE TABLE `lottery_prizes`  (
+  `id` int(0) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '奖品名称，如 一等奖',
+  `amount` int(0) NOT NULL COMMENT '奖品面额，未中奖为0',
+  `weight` int(0) NOT NULL COMMENT '权重，决定抽中几率',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of lottery_prizes
+-- ----------------------------
+INSERT INTO `lottery_prizes` VALUES (1, '一等奖', 5, 10);
+INSERT INTO `lottery_prizes` VALUES (2, '二等奖', 3, 20);
+INSERT INTO `lottery_prizes` VALUES (3, '三等奖', 2, 40);
+INSERT INTO `lottery_prizes` VALUES (4, '未中奖', 0, 20);
+
+-- ----------------------------
+-- Table structure for lottery_records
+-- ----------------------------
+DROP TABLE IF EXISTS `lottery_records`;
+CREATE TABLE `lottery_records`  (
+  `id` int(0) NOT NULL AUTO_INCREMENT,
+  `user_id` int(0) NOT NULL COMMENT '用户ID',
+  `prize_id` int(0) NOT NULL COMMENT '奖品ID',
+  `prize_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '冗余的奖品名称',
+  `prize_amt` int(0) NOT NULL COMMENT '冗余的奖品面额',
+  `draw_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '抽奖时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `user_id`(`user_id`) USING BTREE,
+  INDEX `fk_lr_prize`(`prize_id`) USING BTREE,
+  CONSTRAINT `fk_lr_prize` FOREIGN KEY (`prize_id`) REFERENCES `lottery_prizes` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `fk_lr_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of lottery_records
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for questions
@@ -585,61 +642,11 @@ CREATE TABLE `quiz_answers`  (
   INDEX `question_id`(`question_id`) USING BTREE,
   CONSTRAINT `quiz_answers_ibfk_1` FOREIGN KEY (`record_id`) REFERENCES `quiz_records` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `quiz_answers_ibfk_2` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 811 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 911 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of quiz_answers
 -- ----------------------------
-INSERT INTO `quiz_answers` VALUES (761, 53, 961, 'B', 1);
-INSERT INTO `quiz_answers` VALUES (762, 53, 1132, 'D', 1);
-INSERT INTO `quiz_answers` VALUES (763, 53, 1058, '[{alias=A, answer=电工, isSelect=1}, {alias=B, answer=放炮工, isSelect=1}, {alias=C, answer=电梯司机, isSelect=1}, {alias=D, answer=厂内机动车驾驶员, isSelect=1}]', 0);
-INSERT INTO `quiz_answers` VALUES (764, 53, 1046, 'A', 1);
-INSERT INTO `quiz_answers` VALUES (765, 53, 943, 'A', 1);
-INSERT INTO `quiz_answers` VALUES (766, 58, 1069, 'A,B', 1);
-INSERT INTO `quiz_answers` VALUES (767, 58, 1073, 'A,B,C,D', 1);
-INSERT INTO `quiz_answers` VALUES (768, 58, 1374, '', 0);
-INSERT INTO `quiz_answers` VALUES (769, 58, 1055, 'A,D', 1);
-INSERT INTO `quiz_answers` VALUES (770, 58, 1217, '', 0);
-INSERT INTO `quiz_answers` VALUES (771, 61, 1093, 'A,B', 1);
-INSERT INTO `quiz_answers` VALUES (772, 61, 1397, '', 0);
-INSERT INTO `quiz_answers` VALUES (773, 61, 1193, '', 0);
-INSERT INTO `quiz_answers` VALUES (774, 61, 1345, '', 0);
-INSERT INTO `quiz_answers` VALUES (775, 61, 1170, '', 0);
-INSERT INTO `quiz_answers` VALUES (776, 62, 967, '', 0);
-INSERT INTO `quiz_answers` VALUES (777, 62, 1345, '', 0);
-INSERT INTO `quiz_answers` VALUES (778, 62, 1275, '', 0);
-INSERT INTO `quiz_answers` VALUES (779, 62, 961, '', 0);
-INSERT INTO `quiz_answers` VALUES (780, 62, 1319, '', 0);
-INSERT INTO `quiz_answers` VALUES (781, 63, 1211, '', 0);
-INSERT INTO `quiz_answers` VALUES (782, 63, 1214, '', 0);
-INSERT INTO `quiz_answers` VALUES (783, 63, 989, '', 0);
-INSERT INTO `quiz_answers` VALUES (784, 63, 1193, '', 0);
-INSERT INTO `quiz_answers` VALUES (785, 63, 1061, 'A,B,C', 1);
-INSERT INTO `quiz_answers` VALUES (786, 64, 1017, '', 0);
-INSERT INTO `quiz_answers` VALUES (787, 64, 1210, '', 0);
-INSERT INTO `quiz_answers` VALUES (788, 64, 1002, '', 0);
-INSERT INTO `quiz_answers` VALUES (789, 64, 995, '', 0);
-INSERT INTO `quiz_answers` VALUES (790, 64, 967, '', 0);
-INSERT INTO `quiz_answers` VALUES (791, 65, 1215, '', 0);
-INSERT INTO `quiz_answers` VALUES (792, 65, 1074, 'A,B,C,D,E', 1);
-INSERT INTO `quiz_answers` VALUES (793, 65, 1421, '', 0);
-INSERT INTO `quiz_answers` VALUES (794, 65, 1160, '', 0);
-INSERT INTO `quiz_answers` VALUES (795, 65, 1118, 'A,B,C,D', 1);
-INSERT INTO `quiz_answers` VALUES (796, 66, 1332, 'A,', 0);
-INSERT INTO `quiz_answers` VALUES (797, 66, 1287, 'A,', 0);
-INSERT INTO `quiz_answers` VALUES (798, 66, 1314, 'B,', 0);
-INSERT INTO `quiz_answers` VALUES (799, 66, 1077, 'A,B,C,D', 1);
-INSERT INTO `quiz_answers` VALUES (800, 66, 945, 'B,', 0);
-INSERT INTO `quiz_answers` VALUES (801, 67, 1402, 'A', 1);
-INSERT INTO `quiz_answers` VALUES (802, 67, 1076, 'A,B,C,D', 1);
-INSERT INTO `quiz_answers` VALUES (803, 67, 1091, 'A,B,C', 1);
-INSERT INTO `quiz_answers` VALUES (804, 67, 1099, 'A,B,D', 1);
-INSERT INTO `quiz_answers` VALUES (805, 67, 1119, 'C', 1);
-INSERT INTO `quiz_answers` VALUES (806, 68, 1457, 'C', 1);
-INSERT INTO `quiz_answers` VALUES (807, 68, 1449, 'A', 1);
-INSERT INTO `quiz_answers` VALUES (808, 68, 1217, 'C', 1);
-INSERT INTO `quiz_answers` VALUES (809, 68, 1345, 'B', 1);
-INSERT INTO `quiz_answers` VALUES (810, 68, 1008, 'B', 1);
 
 -- ----------------------------
 -- Table structure for quiz_records
@@ -654,27 +661,11 @@ CREATE TABLE `quiz_records`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `user_id`(`user_id`) USING BTREE,
   CONSTRAINT `quiz_records_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 69 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 93 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of quiz_records
 -- ----------------------------
-INSERT INTO `quiz_records` VALUES (53, 2, '2025-06-30 00:40:30', 80, 26);
-INSERT INTO `quiz_records` VALUES (54, 2, '2025-06-30 00:52:33', 0, 25);
-INSERT INTO `quiz_records` VALUES (55, 2, '2025-06-30 00:56:02', 0, 233);
-INSERT INTO `quiz_records` VALUES (56, 2, '2025-06-30 00:57:40', 0, 332);
-INSERT INTO `quiz_records` VALUES (57, 2, '2025-06-30 01:00:00', 0, 471);
-INSERT INTO `quiz_records` VALUES (58, 2, '2025-06-30 01:05:35', 60, 806);
-INSERT INTO `quiz_records` VALUES (59, 2, '2025-06-30 01:12:12', 0, 23);
-INSERT INTO `quiz_records` VALUES (60, 2, '2025-06-30 01:15:19', 0, 24);
-INSERT INTO `quiz_records` VALUES (61, 2, '2025-06-30 01:16:04', 20, 68);
-INSERT INTO `quiz_records` VALUES (62, 2, '2025-06-30 01:17:13', 0, 21);
-INSERT INTO `quiz_records` VALUES (63, 2, '2025-06-30 01:18:09', 20, 23);
-INSERT INTO `quiz_records` VALUES (64, 2, '2025-06-30 01:19:04', 0, 20);
-INSERT INTO `quiz_records` VALUES (65, 2, '2025-06-30 01:20:30', 40, 37);
-INSERT INTO `quiz_records` VALUES (66, 2, '2025-06-30 01:23:38', 20, 52);
-INSERT INTO `quiz_records` VALUES (67, 2, '2025-06-30 01:24:52', 100, 31);
-INSERT INTO `quiz_records` VALUES (68, 3, '2025-06-30 01:30:43', 100, 124);
 
 -- ----------------------------
 -- Table structure for users
@@ -689,15 +680,10 @@ CREATE TABLE `users`  (
   `create_at` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `phone`(`phone`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 37 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES (1, '13800000000', 'User1', 'company1', '男', '2025-06-23 20:15:47');
-INSERT INTO `users` VALUES (2, '18473950032', '测试1', '测试公司', '男', '2025-06-27 03:00:28');
-INSERT INTO `users` VALUES (3, '15507391315', '用户3', '强盛集团', '男', '2025-06-27 03:28:56');
-INSERT INTO `users` VALUES (4, '13500008888', '芭娜娜', '任天堂', '男', '2025-06-27 03:41:06');
-INSERT INTO `users` VALUES (5, '18850484312', '用户4', '11', '男', '2025-06-28 12:04:18');
 
 SET FOREIGN_KEY_CHECKS = 1;
