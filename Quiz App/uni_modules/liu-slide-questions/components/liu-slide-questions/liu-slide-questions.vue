@@ -1,61 +1,85 @@
 <template>
 	<view class="page-main">
+		<!-- 顶部横幅 -->
 		<view class="topbox">
-			<image class="topimg" :src="topBanner"></image>
+			<image class="topimg" :src="topBanner" />
 			<view class="imgtext">查找身边隐患 共筑安全防线</view>
 		</view>
+
+		<!-- 题目滑动容器 -->
 		<swiper class="swipercard" previous-margin="0" next-margin="0" :circular="false" :autoplay="false"
 			:current="currentIndex" @change="eventHandle">
-			<block v-for="(item, index) in newQuestionsAnswer" :key="index">
+			<block v-for="(item, index) in newQuestionsAnswer" :key="item.id">
 				<swiper-item class="swiperitem">
 					<view class="itembox">
+
+						<!-- 头部：只在答题阶段显示 -->
 						<view class="box-hd">
-							<view class="hdname">当前第<view class="text1">{{ index+ 1}}</view>道题</view>
-							<view class="hdnum">共{{totalNum}}道题</view>
-							<view class="timer">倒计时：{{ Math.floor(timeLeft / 60) }}分 {{ timeLeft%60 }}秒</view>
+
+							<view class="timer" v-if="submitPhase === 1">
+								错题回顾
+							</view>
+							<view class="hdname">
+								当前第<text class="text1">{{ index + 1 }}</text>道题
+							</view>
+							<view class="hdnum">共{{ totalNum }}道题</view>
+							<view class="timer" v-if="submitPhase === 0">
+								倒计时：{{ Math.floor(timeLeft / 60) }}分{{ timeLeft % 60 }}秒
+							</view>
 						</view>
+
+						<!-- 中间内容：题干 + 选项/问答 -->
 						<view class="contentbox">
 							<view class="boxtitle">
-								<text class="textl">{{index+1}}、</text>
-								<text class="textr">{{item.title}}</text>
+								<text class="textl">{{ index + 1 }}、</text>
+								<text class="textr">{{ item.title }}</text>
 							</view>
-							<view v-if="item.problemType == 'SINGLE'">
-								<view class="boxbody" v-for="(self,idxs) in item.children" :key="idxs">
-									<view class="chooseitem" @click="singChoose(index,idxs)">
-										<image class="sinchoose-on" v-if="self.isSelect" :src="chooseonImg" mode="">
-										</image>
-										<view class="sinchoose" v-else></view>
-										<view class="bodyr">{{self.alias}}、{{self.answer}}</view>
+
+							<!-- 单选 -->
+							<view v-if="item.problemType === 'SINGLE'">
+								<view class="boxbody" v-for="(opt, idx) in item.children" :key="opt.alias">
+									<view class="chooseitem" @click="submitPhase === 0 && singChoose(index, idx)">
+										<image v-if="opt.isSelect" class="sinchoose-on" :src="chooseonImg" />
+										<view v-else class="sinchoose" />
+										<view class="bodyr">{{ opt.alias }}、{{ opt.answer }}</view>
 									</view>
 								</view>
 							</view>
-							<view v-if="item.problemType == 'MULTY'">
-								<view class="boxbody" v-for="(self,idxm) in item.children" :key="idxm">
-									<view class="chooseitem" @click="multyChoose(index,idxm)">
-										<image class="sinchoose-on" v-if="self.isSelect" :src="chooseonImg2" mode="">
-										</image>
-										<view class="sinchoose sinchoose2" v-else></view>
-										<view class="bodyr">{{self.alias}}、{{self.answer}}</view>
+
+							<!-- 多选 -->
+							<view v-else-if="item.problemType === 'MULTY'">
+								<view class="boxbody" v-for="(opt, idx) in item.children" :key="opt.alias">
+									<view class="chooseitem" @click="submitPhase === 0 && multyChoose(index, idx)">
+										<image v-if="opt.isSelect" class="sinchoose-on" :src="chooseonImg2" />
+										<view v-else class="sinchoose sinchoose2" />
+										<view class="bodyr">{{ opt.alias }}、{{ opt.answer }}</view>
 									</view>
 								</view>
 							</view>
-							<view class="writeitem" v-if="item.problemType == 'QUESTION'">
+
+							<!-- 问答题 -->
+							<view v-else-if="item.problemType === 'QUESTION'" class="writeitem">
 								<textarea class="textInfo" v-model="item.userAnswer" @input="bindTextAreaBlur(index)"
-									auto-height maxlength="200" placeholder="请输入您的答案" />
+									auto-height maxlength="200" placeholder="请输入您的答案" :disabled="submitPhase === 1" />
 							</view>
 						</view>
+
+						<!-- 底部按钮：上一/下一/提交 -->
 						<view class="footbtn">
 							<view class="ftbtn1" @click="back(index)">上一题</view>
-							<view class="ftbtn1" v-if="(index + 1) < totalNum" @click="next(index)">下一题</view>
-							<view class="ftbtn2" v-else @click="submitData">提交</view>
+							<view class="ftbtn1" v-if="index + 1 < totalNum" @click="next(index)">下一题</view>
+							<view class="ftbtn2" v-if="index + 1 === totalNum&&submitPhase === 0" @click="submitData">提交
+							</view>
+							<view class="ftbtn2" v-if="index + 1 === totalNum&&submitPhase === 1" @click="submitData">返回
+							</view>
 						</view>
+
 					</view>
 				</swiper-item>
 			</block>
 		</swiper>
 	</view>
 </template>
-
 <script>
 	export default {
 		props: {
@@ -92,13 +116,14 @@
 				// 倒计时相关
 				timeLeft: 1 * 60, // 300 秒
 				timer: null,
+				submitPhase: 0, // 0=复习，1=最终提交
 			};
 		},
 		mounted() {
-		  this.startTimer();
+			this.startTimer();
 		},
 		beforeDestroy() {
-		  this.clearTimer();
+			this.clearTimer();
 		},
 		methods: {
 			//创建提交数组的数据结构
@@ -128,48 +153,66 @@
 			// 			return
 			// 		}
 			// 	}
-			// 	this.$emit("submit", this.formSubmitData)
+			// 	console.log(JSON.stringify(this.dataList))
+			// 	console.log(JSON.stringify(this.formSubmitData))
+			// 	//this.$emit("submit", this.formSubmitData)
 			// },
 			submitData() {
-			    // 1. 对比答案，收集错题
-			    const wrongList = [];
-			    this.newQuestionsAnswer.forEach((q, idx) => {
-			      const userAns = this.formSubmitData[idx].userAnswer;
-			      const correctAliases = q.answer.split(','); // ['A','B',...]
-			      let isCorrect = false;
-			
-			      if (q.problemType === 'SINGLE') {
-			        // 单选：比对 alias
-			        isCorrect = userAns && userAns.alias === q.answer;
-			      } else if (q.problemType === 'MULTY') {
-			        // 多选：比对所有 alias（排序后再比）
-			        const userAliases = (userAns || []).map(o => o.alias).sort();
-			        isCorrect = JSON.stringify(userAliases) === JSON.stringify(correctAliases.sort());
-			      } else {
-			        // 问答题：简单文本对比
-			        isCorrect = String(userAns || '').trim() === String(q.answer).trim();
-			      }
-			
-			      if (!isCorrect) {
-			        // 拼正确答案文本
-			        const correctTexts = (q.children || [])
-			          .filter(opt => correctAliases.includes(opt.alias))
-			          .map(opt => `${opt.alias}：${opt.answer}`)
-			          .join('；');
-			        wrongList.push({
-			          id: q.id,
-			          title: q.title,
-			          correct: correctTexts
-			        });
-			      }
-			    });
-			
-			    // 2. 提交：把用户答案和错题列表一起发给父组件或后台
-			    this.$emit('submit', {
-			      answers: this.formSubmitData,
-			      wrongList: wrongList
-			    });
-			  },
+				if (this.submitPhase === 0) {
+					// 第一次点击：生成复习列表
+					const wrongQuestions = this.dataList.filter(q => {
+						const entry = this.formSubmitData.find(f => f.id === q.id) || {};
+						const userAns = entry.userAnswer;
+						const correctAliases = q.answer.split(',');
+						let matched = false;
+
+						if (q.problemType === 'SINGLE') {
+							matched = !!(userAns && userAns.alias === correctAliases[0]);
+						} else if (q.problemType === 'MULTY') {
+							const userAliases = (userAns || []).map(a => a.alias).sort();
+							matched = JSON.stringify(userAliases) === JSON.stringify(correctAliases.sort());
+						} else {
+							matched = String(userAns || '').trim() === String(q.answer).trim();
+						}
+
+						return !matched;
+					});
+
+					// 生成 review 列表：勾选正确答案并禁用操作
+					const reviewList = wrongQuestions.map(q => {
+						const clone = JSON.parse(JSON.stringify(q));
+						const correctAliases = q.answer.split(',');
+						clone.children.forEach(opt => {
+							opt.isSelect = correctAliases.includes(opt.alias) ? 1 : 0;
+						});
+						if (clone.problemType === 'QUESTION') {
+							clone.userAnswer = q.answer;
+						}
+						return clone;
+					});
+
+					// 渲染复习列表
+					this.newQuestionsAnswer = reviewList;
+					this.totalNum = reviewList.length;
+					this.currentIndex = 0;
+					this.reviewMode = true;
+
+					// 进入复习模式后，phase +1
+					this.submitPhase++;
+					const score = (5-this.newQuestionsAnswer.length)*20;
+					uni.showModal({
+						title: '成绩',
+						content: '你得了'+ score+' 分！',
+						showCancel: false
+					})
+					if(score ===100){
+						this.$emit('submit', this.formSubmitData);
+					}
+				} else {
+					// 第二次点击：真正提交
+					this.$emit('submit', this.formSubmitData);
+				}
+			},
 			//单选事件
 			singChoose(j, e) {
 				if (this.newQuestionsAnswer[j].children[e].isSelect) {
@@ -222,24 +265,27 @@
 				this.currentIndex = index + 1
 			},
 			startTimer() {
-			  if (this.timer) return;
-			  this.timer = setInterval(() => {
-			    if (this.timeLeft > 0) {
-			      this.timeLeft--;
-			    } else {
-			      // 时间到，自动提交
-			      this.clearTimer();
-			      uni.showToast({ title: '时间到，自动提交', icon: 'none' });
-			      this.submitData();
-			    }
-			  }, 1000);
+				if (this.timer) return;
+				this.timer = setInterval(() => {
+					if (this.timeLeft > 0) {
+						this.timeLeft--;
+					} else {
+						// 时间到，自动提交
+						this.clearTimer();
+						uni.showToast({
+							title: '时间到，自动提交',
+							icon: 'none'
+						});
+						this.submitData();
+					}
+				}, 1000);
 			},
 			// 清除定时器
 			clearTimer() {
-			  if (this.timer) {
-			    clearInterval(this.timer);
-			    this.timer = null;
-			  }
+				if (this.timer) {
+					clearInterval(this.timer);
+					this.timer = null;
+				}
 			},
 		}
 	};
@@ -263,13 +309,13 @@
 		margin-top: 50rpx;
 		padding: 0 24rpx;
 	}
-	
+
 	.swipercard {
 		width: 100%;
 		height: calc(100vh - 316rpx);
 		background: #FFFFFF;
 	}
-	
+
 	.topbox .topimg {
 		width: 100%;
 		height: 100%;
@@ -330,6 +376,7 @@
 		color: #666666;
 		line-height: 42rpx;
 	}
+
 	.contentbox {
 		font-size: 30rpx;
 		color: #333333;
@@ -403,14 +450,17 @@
 		font-weight: 500;
 		color: #FFFFFF;
 	}
-	
+
 	/* 新增对 .bodyr 的样式 */
 	.bodyr {
-	  flex: 1;            /* 占据剩余空间 */
-	  min-width: 0;       /* 允许收缩，否则会因为单词/汉字撑开 */
-	  line-height: 64rpx; /* 和 .boxbody 里的行高保持一致 */
-	  /* 换行设置，保证文字超长自动断行 */
-	  white-space: normal;
-	  word-break: break-all;
+		flex: 1;
+		/* 占据剩余空间 */
+		min-width: 0;
+		/* 允许收缩，否则会因为单词/汉字撑开 */
+		line-height: 64rpx;
+		/* 和 .boxbody 里的行高保持一致 */
+		/* 换行设置，保证文字超长自动断行 */
+		white-space: normal;
+		word-break: break-all;
 	}
 </style>

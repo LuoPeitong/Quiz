@@ -74,8 +74,8 @@
 						uni.hideLoading()
 						if (res.data.code === 200) {
 							uni.showModal({
-								title: '成绩',
-								content: `你得了 ${res.data.object.score} 分！`,
+								title: '结果',
+								content: `你得了 ${res.data.object.name} ！`,
 								showCancel: false,
 								success: () => uni.reLaunch({
 									url: '/pages/home/home'

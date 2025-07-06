@@ -3,9 +3,11 @@ package org.example.service.impl;
 import org.example.dao.IQuestionsDao;
 import org.example.dao.IQuizAnswersDao;
 import org.example.dao.IQuizRecordsDao;
+import org.example.model.LotteryPrize;
 import org.example.model.Questions;
 import org.example.model.QuizAnswers;
 import org.example.model.QuizRecords;
+import org.example.service.LotteryService;
 import org.example.service.QuizService;
 import org.example.vo.OptionDTO;
 import org.example.vo.Result;
@@ -27,6 +29,9 @@ public class QuizServiceImpl implements QuizService {
 
     @Autowired
     private IQuizAnswersDao iQuizAnswersDao;
+
+    @Autowired
+    private LotteryService lotteryService;
 
     public Result getQuestions(){
 
@@ -170,10 +175,16 @@ public class QuizServiceImpl implements QuizService {
         iQuizAnswersDao.batchInsertAnswers(answerEntities);
         iQuizRecordsDao.updateScore(record.getId(), totalScore);
 
-        // 6. 返回给前端：包含 score 和 recordId
-        Map<String, Object> resp = new HashMap<>();
-        resp.put("score", totalScore);
-        resp.put("recordId", record.getId());
-        return Result.ok(resp, "提交成功");
+//        // 6. 返回给前端：包含 score 和 recordId
+//        Map<String, Object> resp = new HashMap<>();
+//        resp.put("score", totalScore);
+//        resp.put("recordId", record.getId());
+
+        LotteryPrize lotteryPrize = new LotteryPrize();
+        if(totalScore==100){
+            lotteryPrize = lotteryService.draw(dto.getUserId());
+            //System.out.println("可以抽奖");
+        }
+        return Result.ok(lotteryPrize, "提交成功");
     }
 }
