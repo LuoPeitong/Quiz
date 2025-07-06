@@ -2,7 +2,7 @@
 	<view class="page-main">
 		<view class="topbox">
 			<image class="topimg" :src="topBanner"></image>
-			<view class="imgtext">你是一个完美主义者吗？</view>
+			<view class="imgtext">查找身边隐患 共筑安全防线</view>
 		</view>
 		<swiper class="swipercard" previous-margin="0" next-margin="0" :circular="false" :autoplay="false"
 			:current="currentIndex" @change="eventHandle">
@@ -12,6 +12,7 @@
 						<view class="box-hd">
 							<view class="hdname">当前第<view class="text1">{{ index+ 1}}</view>道题</view>
 							<view class="hdnum">共{{totalNum}}道题</view>
+							<view class="timer">倒计时：{{ Math.floor(timeLeft / 60) }}分 {{ timeLeft%60 }}秒</view>
 						</view>
 						<view class="contentbox">
 							<view class="boxtitle">
@@ -88,7 +89,16 @@
 				currentIndex: 0,
 				newQuestionsAnswer: [],
 				formSubmitData: [], //提交所需数据
+				// 倒计时相关
+				timeLeft: 1 * 60, // 300 秒
+				timer: null,
 			};
+		},
+		mounted() {
+		  this.startTimer();
+		},
+		beforeDestroy() {
+		  this.clearTimer();
 		},
 		methods: {
 			//创建提交数组的数据结构
@@ -106,20 +116,60 @@
 					})
 				})
 			},
+			// submitData() {
+			// 	for (var i = 0; i < this.formSubmitData.length; i++) {
+			// 		if (!this.formSubmitData[i].userAnswer) {
+			// 			let toast = '请完成第' + (i + 1) + '题后提交！'
+			// 			uni.showToast({
+			// 				title: toast,
+			// 				icon: 'none'
+			// 			})
+			// 			this.currentIndex = i
+			// 			return
+			// 		}
+			// 	}
+			// 	this.$emit("submit", this.formSubmitData)
+			// },
 			submitData() {
-				for (var i = 0; i < this.formSubmitData.length; i++) {
-					if (!this.formSubmitData[i].userAnswer) {
-						let toast = '请完成第' + (i + 1) + '题后提交！'
-						uni.showToast({
-							title: toast,
-							icon: 'none'
-						})
-						this.currentIndex = i
-						return
-					}
-				}
-				this.$emit("submit", this.formSubmitData)
-			},
+			    // 1. 对比答案，收集错题
+			    const wrongList = [];
+			    this.newQuestionsAnswer.forEach((q, idx) => {
+			      const userAns = this.formSubmitData[idx].userAnswer;
+			      const correctAliases = q.answer.split(','); // ['A','B',...]
+			      let isCorrect = false;
+			
+			      if (q.problemType === 'SINGLE') {
+			        // 单选：比对 alias
+			        isCorrect = userAns && userAns.alias === q.answer;
+			      } else if (q.problemType === 'MULTY') {
+			        // 多选：比对所有 alias（排序后再比）
+			        const userAliases = (userAns || []).map(o => o.alias).sort();
+			        isCorrect = JSON.stringify(userAliases) === JSON.stringify(correctAliases.sort());
+			      } else {
+			        // 问答题：简单文本对比
+			        isCorrect = String(userAns || '').trim() === String(q.answer).trim();
+			      }
+			
+			      if (!isCorrect) {
+			        // 拼正确答案文本
+			        const correctTexts = (q.children || [])
+			          .filter(opt => correctAliases.includes(opt.alias))
+			          .map(opt => `${opt.alias}：${opt.answer}`)
+			          .join('；');
+			        wrongList.push({
+			          id: q.id,
+			          title: q.title,
+			          correct: correctTexts
+			        });
+			      }
+			    });
+			
+			    // 2. 提交：把用户答案和错题列表一起发给父组件或后台
+			    this.$emit('submit', {
+			      answers: this.formSubmitData,
+			      wrongList: wrongList
+			    });
+			  },
 			//单选事件
 			singChoose(j, e) {
 				if (this.newQuestionsAnswer[j].children[e].isSelect) {
@@ -170,7 +220,27 @@
 			//下一题
 			next(index) {
 				this.currentIndex = index + 1
-			}
+			},
+			startTimer() {
+			  if (this.timer) return;
+			  this.timer = setInterval(() => {
+			    if (this.timeLeft > 0) {
+			      this.timeLeft--;
+			    } else {
+			      // 时间到，自动提交
+			      this.clearTimer();
+			      uni.showToast({ title: '时间到，自动提交', icon: 'none' });
+			      this.submitData();
+			    }
+			  }, 1000);
+			},
+			// 清除定时器
+			clearTimer() {
+			  if (this.timer) {
+			    clearInterval(this.timer);
+			    this.timer = null;
+			  }
+			},
 		}
 	};
 </script>
@@ -187,6 +257,19 @@
 		position: relative;
 	}
 
+	.footbtn {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 112rpx;
+		padding: 0 24rpx;
+	}
+	
+	.swipercard {
+		width: 100%;
+		height: calc(100vh - 316rpx);
+		background: #FFFFFF;
+	}
+	
 	.topbox .topimg {
 		width: 100%;
 		height: 100%;
@@ -204,12 +287,6 @@
 
 	}
 
-	.swipercard {
-		width: 100%;
-		height: calc(100vh - 316rpx);
-		background: #FFFFFF;
-	}
-
 	.itembox {
 		width: calc(100% - 96rpx);
 		padding: 32rpx 48rpx;
@@ -225,7 +302,7 @@
 	}
 
 	.hdname {
-		width: 400rpx;
+		width: 200rpx;
 		font-size: 28rpx;
 		display: flex;
 		align-items: flex-start;
@@ -247,6 +324,12 @@
 		line-height: 42rpx;
 	}
 
+	.timer {
+		font-size: 28rpx;
+		font-weight: 400;
+		color: #666666;
+		line-height: 42rpx;
+	}
 	.contentbox {
 		font-size: 30rpx;
 		color: #333333;
@@ -299,13 +382,6 @@
 		color: #333333;
 	}
 
-	.footbtn {
-		display: flex;
-		justify-content: space-between;
-		margin-top: 112rpx;
-		padding: 0 24rpx;
-	}
-
 	.ftbtn1 {
 		width: 270rpx;
 		height: 80rpx;
@@ -326,5 +402,15 @@
 		font-size: 30rpx;
 		font-weight: 500;
 		color: #FFFFFF;
+	}
+	
+	/* 新增对 .bodyr 的样式 */
+	.bodyr {
+	  flex: 1;            /* 占据剩余空间 */
+	  min-width: 0;       /* 允许收缩，否则会因为单词/汉字撑开 */
+	  line-height: 64rpx; /* 和 .boxbody 里的行高保持一致 */
+	  /* 换行设置，保证文字超长自动断行 */
+	  white-space: normal;
+	  word-break: break-all;
 	}
 </style>

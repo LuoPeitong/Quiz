@@ -51,7 +51,7 @@ public interface IQuizRecordsDao {
             "JOIN users u ON t.user_id = u.id ",
             "WHERE t.rn = 1 ",
             "ORDER BY t.score DESC ",
-            "LIMIT 50 "
+            "LIMIT 30 "
     })
     List<RankDTO> getTopRank();
 }
