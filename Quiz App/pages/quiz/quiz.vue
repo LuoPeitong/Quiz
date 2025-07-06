@@ -81,6 +81,15 @@
 									url: '/pages/home/home'
 								})
 							})
+						} else if (res.data.code === 201) {
+							uni.showModal({
+								title: '很遗憾',
+								content: `满分才有抽奖机会哦`,
+								showCancel: false,
+								success: () => uni.reLaunch({
+									url: '/pages/home/home'
+								})
+							})
 						} else {
 							uni.showToast({
 								title: '提交失败',

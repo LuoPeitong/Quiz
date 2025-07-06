@@ -183,8 +183,11 @@ public class QuizServiceImpl implements QuizService {
         LotteryPrize lotteryPrize = new LotteryPrize();
         if(totalScore==100){
             lotteryPrize = lotteryService.draw(dto.getUserId());
+            return new Result(200, lotteryPrize, "提交成功");
             //System.out.println("可以抽奖");
         }
-        return Result.ok(lotteryPrize, "提交成功");
+        else{
+            return new Result(201, lotteryPrize, "提交成功");
+        }
     }
 }

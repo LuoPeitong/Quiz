@@ -114,7 +114,7 @@
 				newQuestionsAnswer: [],
 				formSubmitData: [], //提交所需数据
 				// 倒计时相关
-				timeLeft: 1 * 60, // 300 秒
+				timeLeft: 5 * 60, // 300 秒
 				timer: null,
 				submitPhase: 0, // 0=复习，1=最终提交
 			};
@@ -201,13 +201,18 @@
 					this.submitPhase++;
 					const score = (5-this.newQuestionsAnswer.length)*20;
 					uni.showModal({
-						title: '成绩',
-						content: '你得了'+ score+' 分！',
-						showCancel: false
-					})
-					if(score ===100){
-						this.$emit('submit', this.formSubmitData);
-					}
+					  title: '成绩',
+					  content: '你得了 ' + score + ' 分！',
+					  showCancel: false,
+					  success: (res) => {
+					    if (res.confirm) {
+					      // 用户点了“确定”以后再判断
+					      if (score === 100) {
+					        this.$emit('submit', this.formSubmitData);
+					      }
+					    }
+					  }
+					});
 				} else {
 					// 第二次点击：真正提交
 					this.$emit('submit', this.formSubmitData);
