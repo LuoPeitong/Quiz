@@ -1,7 +1,8 @@
 <template>
 	<view class="quiz-page">
 		<!-- 有题目时才渲染滑动组件 -->
-		<liu-slide-questions v-if="slideQuestions.length" :dataList="slideQuestions" @submit="onSubmit" />
+		<liu-slide-questions v-if="slideQuestions.length" :dataList="slideQuestions" @submit="onSubmit"
+			:disabled="isSubmitting" />
 		<!-- 无题目时显示加载或空状态 -->
 		<view v-else class="loading">
 			正在加载题目...
@@ -15,6 +16,7 @@
 			return {
 				rawQuestions: [], // 原始接口返回
 				slideQuestions: [], // 转换后给插件的数据
+				isSubmitting: false,
 				startTime: 0 // 记录开始时间
 			}
 		},
@@ -56,9 +58,13 @@
 				})
 			},
 			onSubmit(dataList) {
+				// 如果已经在提交，就直接 return
+				if (this.isSubmitting) return;
+
+				this.isSubmitting = true;
 				uni.showLoading({
-					title: '提交中'
-				})
+					title: '提交中…'
+				});
 				uni.request({
 					url: this.$baseUrl + "api/submit",
 					method: 'POST',
