@@ -22,7 +22,6 @@
 	import wInput from '../../components/watch-login/watch-input.vue' //input
 	import wButton from '../../components/watch-login/watch-button.vue' //button
 	import lzcPicker from '../../components/lzc-picker/lzc-picker.vue'
-	import companies from './company.json';
 
 	export default {
 		data() {
@@ -34,7 +33,7 @@
 				company: '', //公司
 				isRotate: false, //是否加载旋转
 				isFocus: true, // 是否聚焦
-				localCompanies: companies,
+				localCompanies: [],
 				returnUrl: ''
 			};
 		},
@@ -49,8 +48,21 @@
 		    },
 		mounted() {
 			_this = this;
+			this.getCompany();
 		},
 		methods: {
+			getCompany(){
+				uni.request({
+					url: this.$baseUrl + "api/users/getCompany",
+					method: 'post',
+					header: {
+						'content-type': 'application/json'
+					},
+					success: res => {
+						this.localCompanies = res.data.object;
+					}
+				})
+			},
 			changeItem(company){
 				this.company = company
 			},

@@ -27,7 +27,7 @@
 				<view>一等奖：5元微信现金红包</view>
 				<view>二等奖：3元微信现金红包</view>
 				<view>三等奖：2元微信现金红包</view>
-				<view>每日奖池：3000元</view>
+				<view>今日奖池剩余：{{todayBalance}}元</view>
 
 				<view class="sub-title">📅 活动时间</view>
 				<view>2025年07月14日 08:00 ~ 2025年07月18日 18:00</view>
@@ -71,7 +71,8 @@
 				nickname: '',
 				participantCount: 0,
 				remainingChance: 0,
-				otherRanks: []
+				otherRanks: [],
+				todayBalance: 0
 			};
 		},
 		onLoad() {
@@ -110,7 +111,7 @@
 				const timeDifference = currentTimestamp - loginTime;
 				
 				// 判断时间差是否超过30分钟（30分钟 = 30 * 60 * 1000 毫秒）
-				if (timeDifference > 5 * 60 * 1000) {
+				if (timeDifference > 30 * 60 * 1000) {
 				  uni.removeStorageSync('login_user_phone')
 				  uni.removeStorageSync('login_timeing')
 				}
@@ -135,6 +136,7 @@
 						this.otherRanks = res.data.object.otherRanks;
 						this.participantCount = res.data.object.participantCount;
 						this.remainingChance = res.data.object.remainingChance;
+						this.todayBalance = res.data.object.todayBalance;
 					}
 				})
 			}

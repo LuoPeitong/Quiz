@@ -45,13 +45,16 @@ public interface IQuizRecordsDao {
             "        r.user_id, ",
             "        r.score, ",
             "        r.time_used, ",
-            "        ROW_NUMBER() OVER (PARTITION BY r.user_id ORDER BY r.score DESC, r.time_used ASC) AS rn ",
+            "        ROW_NUMBER() OVER (",
+            "            PARTITION BY r.user_id ",
+            "            ORDER BY r.score DESC, r.time_used ASC",
+            "        ) AS rn ",
             "    FROM quiz_records r ",
             ") t ",
             "JOIN users u ON t.user_id = u.id ",
             "WHERE t.rn = 1 ",
-            "ORDER BY t.score DESC ",
-            "LIMIT 30 "
+            "ORDER BY t.score DESC, t.time_used ASC ",
+            "LIMIT 30"
     })
     List<RankDTO> getTopRank();
 }

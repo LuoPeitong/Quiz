@@ -9,9 +9,9 @@ Vue.use(uView);
 Vue.config.productionTip = false
 
 // 服务器地址
-Vue.prototype.$baseUrl = "http://8.138.216.22:8088/quizAPI/"
+//Vue.prototype.$baseUrl = "http://8.138.216.22:8088/quizAPI/"
 // 本地地址
-//Vue.prototype.$baseUrl = "http://localhost:8088/quizAPI_war_exploded/"
+Vue.prototype.$baseUrl = "http://localhost:8088/QuizJavaAPI_war/"
 
 
 App.mpType = 'app'

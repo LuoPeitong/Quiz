@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import org.example.model.Users;
+import org.example.service.HomeService;
 import org.example.service.UsersService;
 import org.example.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ public class UsersController {
 
     @Autowired
     private UsersService usersService;
+
+    @Autowired
+    private HomeService homeService;
 
     @ResponseBody
     @PostMapping("/login")
@@ -31,4 +35,17 @@ public class UsersController {
         }
     }
 
+    @ResponseBody
+    @PostMapping("/getCompany")
+    public Result getCompany() {
+
+        try{
+
+            return homeService.getCompany();
+        }
+        catch (Exception e) {
+
+            return Result.error();
+        }
+    }
 }

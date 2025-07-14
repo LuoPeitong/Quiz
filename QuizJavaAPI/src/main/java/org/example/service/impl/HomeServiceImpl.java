@@ -1,5 +1,7 @@
 package org.example.service.impl;
 
+import org.example.dao.ICompanyDao;
+import org.example.dao.ILotteryPoolDao;
 import org.example.dao.IQuizRecordsDao;
 import org.example.model.Users;
 import org.example.service.HomeService;
@@ -20,6 +22,12 @@ public class HomeServiceImpl implements HomeService {
     @Autowired
     private IQuizRecordsDao iQuizRecordsDao;
 
+    @Autowired
+    private ILotteryPoolDao iLotteryPoolDao;
+
+    @Autowired
+    private ICompanyDao iCompanyDao;
+
     public Result getRank(){
 
         return Result.ok(iQuizRecordsDao.getTopRank(), "排行榜获取成功");
@@ -38,11 +46,20 @@ public class HomeServiceImpl implements HomeService {
         LocalDateTime end   = today.plusDays(1).atStartOfDay(); // 明天 00:00:00
         int todayCount = iQuizRecordsDao.countTodayAttempts(userID,start,end);
 
+        int todayBalance = iLotteryPoolDao.findById(today).getBalance();
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("participantCount", countAll);
         stats.put("remainingChance", todayCount);
         stats.put("otherRanks", rankDTOS);
+        stats.put("todayBalance", todayBalance);
 
         return Result.ok(stats, "查询成功");
+    }
+
+    public Result getCompany(){
+
+        List<String> names = iCompanyDao.getAllCompany();
+        return Result.ok(names, "获取成功");
     }
 }

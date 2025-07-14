@@ -9,4 +9,6 @@ public interface HomeService {
     Result getRank();
 
     Result initPage(Users u);
+
+    Result getCompany();
 }
