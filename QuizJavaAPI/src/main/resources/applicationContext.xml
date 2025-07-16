@@ -21,18 +21,18 @@
 
     <!--Spring整合MyBatis框架-->
     <!--配置连接池-->
-<!--    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">-->
-<!--        <property name="driverClass" value="com.mysql.cj.jdbc.Driver"/>-->
-<!--        <property name="jdbcUrl" value="jdbc:mysql://8.138.216.22:3306/quiz_db"/>-->
-<!--        <property name="user" value="quiz_user"/>-->
-<!--        <property name="password" value="QuizUserPass123!"/>-->
-<!--    </bean>-->
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
         <property name="driverClass" value="com.mysql.cj.jdbc.Driver"/>
-        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/quiz_db"/>
-        <property name="user" value="root"/>
-        <property name="password" value="123"/>
+        <property name="jdbcUrl" value="jdbc:mysql://8.138.216.22:3306/quiz_db"/>
+        <property name="user" value="quiz_user"/>
+        <property name="password" value="QuizUserPass123!"/>
     </bean>
+<!--    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">-->
+<!--        <property name="driverClass" value="com.mysql.cj.jdbc.Driver"/>-->
+<!--        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/quiz_db"/>-->
+<!--        <property name="user" value="root"/>-->
+<!--        <property name="password" value="123"/>-->
+<!--    </bean>-->
     <bean id="sqlSessonFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
 

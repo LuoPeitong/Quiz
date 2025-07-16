@@ -5,7 +5,9 @@ import org.example.model.QuizRecords;
 import org.example.vo.RankDTO;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface IQuizRecordsDao {
@@ -57,4 +59,56 @@ public interface IQuizRecordsDao {
             "LIMIT 30"
     })
     List<RankDTO> getTopRank();
+
+    // 1. 各日期答题人数
+    @Select("SELECT DATE(submit_time) AS date, COUNT(*) AS count " +
+            "FROM quiz_records " +
+            "GROUP BY DATE(submit_time) " +
+            "ORDER BY DATE(submit_time)")
+    List<Map<String, Object>> countParticipantsByDate();
+
+    // 2. 指定日期下中奖分布
+    @Select("SELECT prize_name AS name, COUNT(*) AS value " +
+            "FROM lottery_records " +
+            "WHERE DATE(draw_time) = #{date} " +
+            "GROUP BY prize_name")
+    List<Map<String, Object>> winnerDistributionByDate(@Param("date") LocalDate date);
+
+    // 3. 公司答题次数前5
+    @Select("SELECT u.company AS company, COUNT(*) AS count " +
+            "FROM quiz_records r " +
+            "JOIN users u ON r.user_id = u.id " +
+            "GROUP BY u.company " +
+            "ORDER BY count DESC " +
+            "LIMIT 10")
+    List<Map<String, Object>> top5CompanyStats();
+
+    @Select("SELECT DISTINCT company FROM users")
+    List<String> getAllCompanies();
+
+    /** 2. 查询指定公司下各员工的答题及中奖次数统计 */
+    @Select({
+            "SELECT u.nickname AS name,",
+            "       COUNT(DISTINCT r.id) AS participationCount,",
+            "       SUM(CASE WHEN lr.prize_name = '一等奖' THEN 1 ELSE 0 END)       AS firstPrizeCount,",
+            "       SUM(CASE WHEN lr.prize_name = '二等奖' THEN 1 ELSE 0 END)       AS secondPrizeCount,",
+            "       SUM(CASE WHEN lr.prize_name = '三等奖' THEN 1 ELSE 0 END)       AS thirdPrizeCount,",
+            "       SUM(CASE WHEN lr.prize_name = '未中奖' THEN 1 ELSE 0 END)       AS noPrizeCount",
+            "  FROM users u",
+            "  LEFT JOIN quiz_records r  ON r.user_id    = u.id",
+            "  LEFT JOIN lottery_records lr ON lr.user_id = u.id",
+            " WHERE u.company = #{company}",
+            " GROUP BY u.id"
+    })
+    List<Map<String,Object>> getCompanyEmployeeStats(@Param("company") String company);
+
+    /** 3. 分页＋动态排序的员工排行榜明细 */
+    @SelectProvider(type = QuizSqlProvider.class, method = "employeeRankList")
+    List<Map<String,Object>> getEmployeeRankList(@Param("sortField") String sortField,
+                                                 @Param("offset") int offset,
+                                                 @Param("pageSize") int pageSize);
+
+    /** 4. 员工排行榜总条数，用于分页 */
+    @SelectProvider(type = QuizSqlProvider.class, method = "employeeRankCount")
+    int countEmployeeRankList();
 }

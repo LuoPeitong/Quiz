@@ -16,6 +16,7 @@ import org.example.vo.SubmitDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service("quizService")
@@ -189,5 +190,51 @@ public class QuizServiceImpl implements QuizService {
         else{
             return new Result(201, lotteryPrize, "提交成功");
         }
+    }
+
+    @Override
+    public Result getQuizStats(String dateStr) {
+        // 解析前端传入的日期
+        LocalDate date = LocalDate.parse(dateStr);
+
+        // 1. 各日期答题人数（折线图）
+        List<Map<String, Object>> participantData = iQuizRecordsDao.countParticipantsByDate();
+
+        // 2. 指定日期下中奖分布（饼图）
+        List<Map<String, Object>> winnerDistribution = iQuizRecordsDao.winnerDistributionByDate(date);
+
+        // 3. 公司答题次数前5（柱状图）
+        List<Map<String, Object>> companyStats = iQuizRecordsDao.top5CompanyStats();
+
+        // 组装返回结构
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("participantData", participantData);
+        resp.put("winnerDistribution", winnerDistribution);
+        resp.put("companyStats", companyStats);
+
+        return Result.ok(resp, "统计数据获取成功");
+    }
+
+    @Override
+    public Result getAllCompanies() {
+        List<String> list = iQuizRecordsDao.getAllCompanies();
+        return Result.ok(list, "公司列表获取成功");
+    }
+
+    @Override
+    public Result getCompanyEmployeeStats(String company) {
+        List<Map<String,Object>> stats = iQuizRecordsDao.getCompanyEmployeeStats(company);
+        return Result.ok(stats, "公司员工统计获取成功");
+    }
+
+    @Override
+    public Result getEmployeeRankList(String sortField, int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        List<Map<String,Object>> records = iQuizRecordsDao.getEmployeeRankList(sortField, offset, pageSize);
+        int total = iQuizRecordsDao.countEmployeeRankList();
+        Map<String,Object> resp = new HashMap<>();
+        resp.put("records", records);
+        resp.put("total", total);
+        return Result.ok(resp, "排名列表获取成功");
     }
 }

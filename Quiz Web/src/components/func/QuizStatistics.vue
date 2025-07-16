@@ -1,97 +1,118 @@
 <template>
-  <div class="container">
-    <!-- 1. 日期选择 -->
-    <div class="block">
-      <span class="demonstration">日期选择：</span>
-      <el-date-picker
-        v-model="date"
-        type="date"
-        value-format="yyyy-MM-dd"
-        placeholder="选择日期"
-        :picker-options="pickerOptions"
-        @change="fetchData"
-      />
+  <div class="quiz-monitoring">
+    <!-- 饼图：当前选定日期下中奖分布 -->
+    <div class="controls">
+      <label for="datePicker">选择日期：</label>
+      <input id="datePicker" type="date" v-model="selectedDate" @change="onDateChange" />
     </div>
-
-    <!-- 2. 总答题人数 -->
-    <el-descriptions class="margin-top" title="统计信息" :column="1" border>
-      <el-descriptions-item label="总答题人数">
-        {{ summary.total }}
-      </el-descriptions-item>
-    </el-descriptions>
-
-    <!-- 3. 各公司答题人数柱状图 -->
-    <el-card class="margin-top">
-      <div ref="companyChart" class="chart-container"></div>
-    </el-card>
-
-    <!-- 4. 各公司答题人数列表 -->
-    <el-table :data="companyStats" stripe border class="margin-top">
-      <el-table-column prop="company" label="公司" />
-      <el-table-column prop="count"   label="人数" />
-    </el-table>
-
-    <!-- 5. 每个人答题详情 -->
-    <el-table :data="userStats" stripe border class="margin-top">
-      <el-table-column prop="company"     label="公司" />
-      <el-table-column prop="nickname"    label="姓名" />
-      <el-table-column prop="score"       label="得分" />
-      <el-table-column prop="time_used"   label="用时（秒）" />
-      <el-table-column prop="submit_time" label="提交时间" />
-    </el-table>
+    <div ref="pieChart" class="chart small-chart"></div>
+    <!-- 折线图：按日期答题人数变化 -->
+    <div ref="lineChart" class="chart"></div>
+    <!-- 柱状图：参与人数前5公司答题次数 -->
+    <div ref="barChart" class="chart"></div>
   </div>
 </template>
 
 <script>
+import * as echarts from 'echarts'
 export default {
   name: 'QuizStatistics',
-  data () {
+  data() {
     return {
-      date: new Date().toISOString().slice(0, 10),
-      pickerOptions: {
-        disabledDate (t) { return t.getTime() > Date.now() },
-        shortcuts: [{
-          text: '今天',
-          onClick (p) { p.$emit('pick', new Date()) }
-        }]
-      },
-      summary: { total: 0 },
-      companyStats: [],
-      userStats: []
+      participantData: [],      // [{ date, count }]
+      winnerDistribution: [],   // [{ name, value }]
+      companyStats: [],         // [{ company, count }]
+      selectedDate: ''          // 日期选择
     }
   },
-  mounted () {
-    this.fetchData()
+  mounted() {
+    // 初始化选中日期为今天
+    this.selectedDate = this.formatDate(new Date())
+    this.getInfo()
+    window.addEventListener('resize', this.resizeCharts)
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.resizeCharts)
   },
   methods: {
-    fetchData () {
-      this.$axios
-        .post('/http://127.0.0.1:8088/QuizJavaAPI_war/statistics/quiz', { date: this.date })
-        .then(res => {
-          const body = res.data
-          if (body.code === 200) {
-            const vo = body.object
-            this.summary      = vo.summary
-            this.companyStats = vo.companyStats
-            this.userStats    = vo.userStats
-            this.$nextTick(this.renderChart)
+    // 格式化日期
+    formatDate(date) {
+      const y = date.getFullYear()
+      const m = String(date.getMonth() + 1).padStart(2, '0')
+      const d = String(date.getDate()).padStart(2, '0')
+      return `${y}-${m}-${d}`
+    },
+    // 获取所有图表数据
+    getInfo() {
+      this.$axios.post('dashboard/getQuizStats', { date: this.selectedDate })
+        .then(({ data }) => {
+          if (data.code === 200) {
+            this.participantData    = data.object.participantData.map(item => ({
+              date: new Date(item.date)
+                .toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' }),
+              count: item.count
+            }))
+            this.winnerDistribution = data.object.winnerDistribution
+            this.companyStats       = data.object.companyStats
+            this.renderCharts()
           } else {
-            this.$message.error(body.message)
+            this.$message.warning(data.message)
           }
         })
+        .catch(err => {
+          console.error('数据获取失败', err)
+        })
     },
-    renderChart () {
-      const chart = this.$echarts.init(this.$refs.companyChart)
+    // 渲染或更新图表
+    renderCharts() {
+      this.renderLineChart()
+      this.renderPieChart()
+      this.renderBarChart()
+    },
+    renderLineChart() {
+      const chart = echarts.init(this.$refs.lineChart)
       chart.setOption({
-        title:  { text: '各公司答题人数' },
-        tooltip:{},
-        xAxis:  { type: 'category', data: this.companyStats.map(i => i.company) },
-        yAxis:  { type: 'value' },
+        title: { text: '答题人数变化（按日期）' },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: this.participantData.map(i => i.date) },
+        yAxis: { type: 'value', name: '人数' },
+        series: [{ type: 'line', data: this.participantData.map(i => i.count), smooth: true }]
+      })
+    },
+    renderPieChart() {
+      const chart = echarts.init(this.$refs.pieChart)
+      chart.setOption({
+        title: { text: `中奖分布 (${this.selectedDate})`, left: 'center' },
+        tooltip: { trigger: 'item' },
+        legend: { orient: 'vertical', left: 'left' },
         series: [{
-          type: 'bar',
-          data: this.companyStats.map(i => i.count)
+          name: '中奖数', type: 'pie', radius: '50%',
+          data: this.winnerDistribution,
+          label: { formatter: '{b}: {c} ({d}%)' },
+          emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.5)' } }
         }]
       })
+    },
+    renderBarChart() {
+      const chart = echarts.init(this.$refs.barChart)
+      chart.setOption({
+        title: { text: '前5公司答题次数' },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: this.companyStats.map(i => i.company), axisLabel: { rotate: 30 } },
+        yAxis: { type: 'value', name: '答题次数' },
+        series: [{ type: 'bar', data: this.companyStats.map(i => i.count), barWidth: '50%' }]
+      })
+    },
+    // 窗口大小改变时自适应
+    resizeCharts() {
+      [this.$refs.lineChart, this.$refs.pieChart, this.$refs.barChart].forEach(ref => {
+        const chart = echarts.getInstanceByDom(this.$refs[ref])
+        if (chart) chart.resize()
+      })
+    },
+    // 选中日期改变时刷新饼图数据
+    onDateChange() {
+      this.getInfo()
     }
   }
 }
@@ -102,4 +123,22 @@ export default {
 .block     { margin-bottom: 20px; }
 .margin-top{ margin-top: 20px; }
 .chart-container { width: 100%; height: 300px; }
+.quiz-monitoring {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.chart {
+  width: 100%;
+  height: 350px;
+}
+.small-chart {
+  max-width: 400px;
+  height: 350px;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 </style>

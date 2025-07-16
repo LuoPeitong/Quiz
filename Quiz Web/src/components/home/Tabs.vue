@@ -10,14 +10,14 @@
 
 <script>
 // 用import添加标签页涉及到的Vue组件
-import LotteryStatistics from '../func/LotteryStatistics'
+import QuizDashboard from '../func/QuizDashboard'
 import QuizStatistics from '../func/QuizStatistics'
 
 export default {
   name: 'Tabs',
   components: {
     // 标签页涉及到的Vue组件需要在这里注册
-    LotteryStatistics,
+    QuizDashboard,
     QuizStatistics
   },
   methods: {
