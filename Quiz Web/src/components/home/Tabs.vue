@@ -10,17 +10,15 @@
 
 <script>
 // 用import添加标签页涉及到的Vue组件
-import func1 from '../func/func1'
-import func2 from '../func/func2'
-import func3 from '../func/func3'
+import LotteryStatistics from '../func/LotteryStatistics'
+import QuizStatistics from '../func/QuizStatistics'
 
 export default {
   name: 'Tabs',
   components: {
     // 标签页涉及到的Vue组件需要在这里注册
-    func1,
-    func2,
-    func3
+    LotteryStatistics,
+    QuizStatistics
   },
   methods: {
     handleTabsEdit (targetName, action) {
