@@ -16,7 +16,7 @@
 			<!-- ③ 参与信息 -->
 			<view class="participation-info glass-box">
 				已有 {{ participantCount }} 人参加活动<br />
-				您今天还有 {{ 3-remainingChance }} 次参与机会
+				您今天还有 {{ 5-remainingChance }} 次参与机会
 			</view>
 
 			<!-- ④ 活动说明 -->
@@ -94,7 +94,7 @@
 					return;
 				}
 				// 2. 判断今天剩余答题次数
-				if (this.remainingChance >= 3) {
+				if (this.remainingChance >= 5) {
 					uni.showToast({
 						icon: 'none',
 						title: '您今天的答题次数已用完'
@@ -111,7 +111,7 @@
 				const timeDifference = currentTimestamp - loginTime;
 				
 				// 判断时间差是否超过30分钟（30分钟 = 30 * 60 * 1000 毫秒）
-				if (timeDifference > 30 * 60 * 1000) {
+				if (timeDifference > 10 * 60 * 1000) {
 				  uni.removeStorageSync('login_user_phone')
 				  uni.removeStorageSync('login_timeing')
 				}
