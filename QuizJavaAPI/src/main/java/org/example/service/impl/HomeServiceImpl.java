@@ -3,6 +3,7 @@ package org.example.service.impl;
 import org.example.dao.ICompanyDao;
 import org.example.dao.ILotteryPoolDao;
 import org.example.dao.IQuizRecordsDao;
+import org.example.model.LotteryPool;
 import org.example.model.Users;
 import org.example.service.HomeService;
 import org.example.vo.RankDTO;
@@ -18,6 +19,8 @@ import java.util.Map;
 
 @Service("homeService")
 public class HomeServiceImpl implements HomeService {
+
+    private static final Integer DAILY_IN = new Integer("3000");
 
     @Autowired
     private IQuizRecordsDao iQuizRecordsDao;
@@ -46,7 +49,23 @@ public class HomeServiceImpl implements HomeService {
         LocalDateTime end   = today.plusDays(1).atStartOfDay(); // 明天 00:00:00
         int todayCount = iQuizRecordsDao.countTodayAttempts(userID,start,end);
 
-        int todayBalance = iLotteryPoolDao.findById(today).getBalance();
+        LotteryPool lot = iLotteryPoolDao.findById(today);
+        if(lot == null){
+            lot = new LotteryPool();
+            lot.setPoolDate(today);
+            LocalDate yesterday = LocalDate.now().minusDays(1);
+            LotteryPool yesterday_pool = iLotteryPoolDao.findById(yesterday);
+            if(yesterday_pool!=null){
+
+                lot.setBalance(DAILY_IN + yesterday_pool.getBalance());
+            }
+            else{
+                lot.setBalance(DAILY_IN);
+            }
+
+            iLotteryPoolDao.init(lot);
+        }
+        int todayBalance = lot.getBalance();
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("participantCount", countAll);
