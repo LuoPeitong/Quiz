@@ -33,7 +33,7 @@ export default {
   methods: {
     login () {
       let _this = this
-      this.$axios.post('/login111', {
+      this.$axios.post('login111', {
         username: this.loginForm.username,
         password: this.loginForm.password
       })
