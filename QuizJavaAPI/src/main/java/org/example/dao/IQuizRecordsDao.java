@@ -88,19 +88,35 @@ public interface IQuizRecordsDao {
 
     /** 2. 查询指定公司下各员工的答题及中奖次数统计 */
     @Select({
-            "SELECT u.nickname AS name,",
-            "       COUNT(DISTINCT r.id) AS participationCount,",
-            "       SUM(CASE WHEN lr.prize_name = '一等奖' THEN 1 ELSE 0 END)       AS firstPrizeCount,",
-            "       SUM(CASE WHEN lr.prize_name = '二等奖' THEN 1 ELSE 0 END)       AS secondPrizeCount,",
-            "       SUM(CASE WHEN lr.prize_name = '三等奖' THEN 1 ELSE 0 END)       AS thirdPrizeCount,",
-            "       SUM(CASE WHEN lr.prize_name = '未中奖' THEN 1 ELSE 0 END)       AS noPrizeCount",
-            "  FROM users u",
-            "  LEFT JOIN quiz_records r  ON r.user_id    = u.id",
-            "  LEFT JOIN lottery_records lr ON lr.user_id = u.id",
-            " WHERE u.company = #{company}",
-            " GROUP BY u.id"
+            "WITH quiz_count AS (",
+            "    SELECT user_id, COUNT(*) AS participationCount",
+            "    FROM quiz_records",
+            "    GROUP BY user_id",
+            "),",
+            "lottery_count AS (",
+            "    SELECT user_id,",
+            "           SUM(CASE WHEN prize_name = '一等奖' THEN 1 ELSE 0 END) AS firstPrizeCount,",
+            "           SUM(CASE WHEN prize_name = '二等奖' THEN 1 ELSE 0 END) AS secondPrizeCount,",
+            "           SUM(CASE WHEN prize_name = '三等奖' THEN 1 ELSE 0 END) AS thirdPrizeCount,",
+            "           SUM(CASE WHEN prize_name = '未中奖' THEN 1 ELSE 0 END) AS noPrizeCount",
+            "    FROM lottery_records",
+            "    GROUP BY user_id",
+            ")",
+            "SELECT",
+            "    u.nickname AS name,",
+            "    IFNULL(qc.participationCount, 0) AS participationCount,",
+            "    IFNULL(lc.firstPrizeCount, 0) AS firstPrizeCount,",
+            "    IFNULL(lc.secondPrizeCount, 0) AS secondPrizeCount,",
+            "    IFNULL(lc.thirdPrizeCount, 0) AS thirdPrizeCount,",
+            "    IFNULL(lc.noPrizeCount, 0) AS noPrizeCount",
+            "FROM users u",
+            "LEFT JOIN quiz_count qc ON qc.user_id = u.id",
+            "LEFT JOIN lottery_count lc ON lc.user_id = u.id",
+            "WHERE u.company = #{company}",
+            "ORDER BY u.nickname"
     })
-    List<Map<String,Object>> getCompanyEmployeeStats(@Param("company") String company);
+    List<Map<String, Object>> getCompanyEmployeeStats(@Param("company") String company);
+
 
     /** 3. 分页＋动态排序的员工排行榜明细 */
     @SelectProvider(type = QuizSqlProvider.class, method = "employeeRankList")
